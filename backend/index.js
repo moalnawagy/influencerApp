@@ -4,6 +4,7 @@ const connect = require('./config/dbConnect');
 const userRoutes = require('./api/user.routes')
 const postRoutes = require('./api/posts.routes')
 const app = express();
+app.set('trust proxy', true)
 const cors = require("cors");
 const corsOptions = {
     origin: '*',

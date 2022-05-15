@@ -9,6 +9,7 @@ const {
     searchAge,
     getAllUsers
 } = require('../services/user.services')
+const reachs = require('../middleware/reaches')
 const hashingPassword = require('../middleware/passwordHashing');
 const { validateSignup, validateSignin } = require('../middleware/validation/userValidation');
 const adminAuth = require('../middleware/auth/adminAuth')
@@ -20,7 +21,7 @@ router.delete("/deleteByID", deleteByID)
 router.get("/getUserPosts", getUserPosts)
 router.get("/searchName", searchName)
 router.get("/searchAge", searchAge)
-router.get("/getAllUsers", adminAuth, getAllUsers)
+router.get("/getAllUsers", reachs, adminAuth, getAllUsers)
 
 
 
