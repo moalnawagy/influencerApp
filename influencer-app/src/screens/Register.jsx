@@ -1,12 +1,13 @@
 import React, {useState, useEffect} from 'react'
 import axios from 'axios'
-import { Form, Spinner } from "react-bootstrap"
+import { Container, Form, Spinner } from "react-bootstrap"
 import backendAPI from '../api/backendAPI'
 import { useNavigate} from 'react-router-dom'
+import Header from '../components/Header'
 
 
  const Register = () => {
-  
+   const navigate = useNavigate()
    const [firstName, setfirstName] = useState("");
    const [lastName, setlastName] = useState("");
    const [email, setemail] = useState("");
@@ -19,7 +20,9 @@ import { useNavigate} from 'react-router-dom'
    const [Token, setToken] = useState("");
 
   const UploadImage= async (files)=>{
-    const token = localStorage.getItem("token")
+
+
+  const token = localStorage.getItem("token")
   const formData = new FormData()
   formData.append("file", files.target.files[0])
   formData.append("cloud_name", "tantauniversitylibrary")
@@ -44,38 +47,35 @@ import { useNavigate} from 'react-router-dom'
       phone:number,
       image,
       plane
-    }).then((res)=>{
+    }).then(async (res)=>{
       setloading(false)
       localStorage.setItem("token", res.data.token )
       localStorage.setItem("userInfo", JSON.stringify(res.data.userInfo))
       setToken(res.data.token)
-      localStorage.setItem("isPrem", res.data.isPrem )
+      localStorage.setItem("isPrem", res.data.userInfo.isPremium )
       
       console.log(res.data);
+    }).then((_)=>{
+      navigate('/', { replace: true })
     })
   }
 
 
 
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    setToken(localStorage.getItem("token"))
-
-  }, []);
-  if(Token){
-    navigate('/', { replace: true })
-}
 
 
-  return (
+  return (<>
+      <Header />
+
+  <Container style={{marginTop:"90px",marginBottom:"50px",maxWidth: "900px",}}>
     <div className='d-flex justify-content-center' style={{
-      backgroundColor:"#FFF6EA",
-      borderRadius:"25px"
+      backgroundColor:"#3A3845",
+      borderRadius:"25px",
+      padding:"20px"
       }}>
     <Form onSubmit={submitHandler}>
     <div className='d-flex justify-content-center'>
-    <h3 style={{color:"#adafae"}}>Sign Up</h3>
+    <h3 style={{color:"#adafae"}}>Signup</h3>
     </div>
     <div className="mb-3">
       <label>First name</label>
@@ -187,6 +187,7 @@ import { useNavigate} from 'react-router-dom'
   {loading && <Spinner animation="grow" />}
 
   </div>
+  </Container></>
   )
 }
 export default Register

@@ -1,8 +1,12 @@
-import React from 'react'
-import { Dropdown } from 'react-bootstrap'
+import React, { useState } from 'react'
+import { Button, Dropdown, Form } from 'react-bootstrap'
 import backendAPI from '../api/backendAPI'
-
+import { useNavigate } from "react-router-dom";
 export const PostDropDown = (props) => {
+
+  const navigate = useNavigate()
+
+
 
   const handlePin = async()=>{
     const pin =await backendAPI.put('/api/posts/pinPost',{id:props.id},{
@@ -28,14 +32,27 @@ export const PostDropDown = (props) => {
       data:{id:props.id}
     } )
   }
-  console.log(props.isPinned);
+
+  const handleUpdate = async()=>{
+    let Title = document.getElementById(`title${props.id}`).innerHTML
+    let Desc = document.getElementById(`desc${props.id}`).innerHTML
+
+    console.log(Title);
+    console.log(Desc);
+    navigate(`/updatePost/${Title}/${Desc}/${props.id}` ,{ replace: true })
+
+
+    
+  }
+
+
   return (
     <Dropdown>
   <Dropdown.Toggle variant="Secondary" id="dropdown-basic">
   </Dropdown.Toggle>
 
   <Dropdown.Menu>
-    <Dropdown.Item href='/' onClick={{}}>Update</Dropdown.Item>
+    <Dropdown.Item onClick={handleUpdate}>Update</Dropdown.Item>
     <Dropdown.Item href='/' onClick={handledelete}>Delete</Dropdown.Item>
     {!props.isPinned&& <Dropdown.Item href='/' onClick={handlePin}>Pin</Dropdown.Item>}
     {props.isPinned&& <Dropdown.Item href='/' onClick={handleunPin}>UnPin</Dropdown.Item>}

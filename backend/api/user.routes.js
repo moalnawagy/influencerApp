@@ -2,7 +2,7 @@ const router = require('express').Router();
 const {
     signIn,
     signUp,
-    updateByID,
+    upgradeToPrem,
     deleteByID,
     getUserPosts,
     searchName,
@@ -10,18 +10,17 @@ const {
     getAllUsers
 } = require('../services/user.services')
 const reachs = require('../middleware/reaches')
-const hashingPassword = require('../middleware/passwordHashing');
 const { validateSignup, validateSignin } = require('../middleware/validation/userValidation');
-const adminAuth = require('../middleware/auth/adminAuth')
-
-router.post("/signup", validateSignup, hashingPassword, signUp)
-router.post("/signIn", validateSignin, signIn)
-router.patch("/updateByID", updateByID)
-router.delete("/deleteByID", deleteByID)
-router.get("/getUserPosts", getUserPosts)
-router.get("/searchName", searchName)
-router.get("/searchAge", searchAge)
-router.get("/getAllUsers", reachs, adminAuth, getAllUsers)
+const adminAuth = require('../middleware/auth/adminAuth');
+const { userAuth } = require('../middleware/auth/userAuth');
+router.post("/signup", reachs, validateSignup, signUp)
+router.post("/signIn", reachs, validateSignin, signIn)
+router.patch("/upgradeToPrem", adminAuth, upgradeToPrem)
+router.delete("/deleteByID", adminAuth, deleteByID)
+router.get("/getUserPosts/:id", reachs, userAuth, getUserPosts)
+router.get("/searchName", reachs, userAuth, searchName)
+router.get("/searchAge", reachs, userAuth, searchAge)
+router.get("/getAllUsers", adminAuth, getAllUsers)
 
 
 

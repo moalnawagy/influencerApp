@@ -10,7 +10,6 @@ const addPostAuth = async(req, res, next) => {
     let token;
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
         try {
-            console.log(req.headers.authorization);
             token = req.headers.authorization.split(" ")[1];
             const decoded = jwt.verify(token, process.env.SECRETE_KEY)
             find = await User.findById(decoded.id).select("-password")
@@ -36,7 +35,7 @@ const addPostAuth = async(req, res, next) => {
 
 
         } catch (err) {
-            res.status(401).json({ messege: "you aren't autherized" })
+            res.status(500).json({ err })
         }
     } else {
         res.status(401).json({ messege: "you aren't autherized" })

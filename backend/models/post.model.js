@@ -1,6 +1,19 @@
 const { array } = require('joi');
 const mongoose = require('mongoose');
 
+const CommentSchema = mongoose.Schema({
+    comment: {
+        type: String,
+        required: true
+    },
+    created_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User',
+    }
+}, {
+    timestamps: true
+})
 const PostSchema = mongoose.Schema({
     title: {
         type: String,
@@ -20,6 +33,7 @@ const PostSchema = mongoose.Schema({
         ref: "User",
 
     }],
+    comments: [CommentSchema],
     isPinned: {
         type: Boolean,
         default: false,
@@ -28,6 +42,8 @@ const PostSchema = mongoose.Schema({
 }, {
     timestamps: true,
 })
+
+
 
 const Post = mongoose.model("Post", PostSchema);
 

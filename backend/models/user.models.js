@@ -1,5 +1,7 @@
 const { bool } = require('joi');
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
 
 const UserSchema = mongoose.Schema({
     first_name: {
@@ -45,6 +47,19 @@ const UserSchema = mongoose.Schema({
     timestamps: true,
 })
 
+UserSchema.pre('insertMany', async(next, dox) => {
+
+    const rounds = process.env.HASH_ROUNDS
+    dox.password = await bcrypt.hash(dox.password, Number(rounds))
+    next()
+})
+
+UserSchema.post('insertMany', async(dox, next) => {
+
+    dox[0].password = undefined
+
+    next()
+})
 
 
 const User = mongoose.model("User", UserSchema);

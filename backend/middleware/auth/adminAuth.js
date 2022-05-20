@@ -16,7 +16,7 @@ const adminAuth = async(req, res, next) => {
             }
             next();
         } catch (err) {
-            res.status(401).json({ messege: "you aren't autherized" })
+            res.status(401).json({ messege: "you aren't autherized", err })
         }
     } else {
         res.status(401).json({ messege: "you aren't autherized" })

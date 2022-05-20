@@ -3,7 +3,6 @@ const { SigninValidation, SignupValidation } = require('./validationModels/user.
 
 const validateSignup = async(req, res, next) => {
     const { first_name, last_name, email, password, age, phone, plane, image } = req.body
-    console.log(req.body);
     const { error } = await SignupValidation.validate({ first_name, last_name, email, password, age, phone, plane, image })
     if (error == undefined) {
         next()

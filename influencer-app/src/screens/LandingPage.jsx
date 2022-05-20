@@ -5,6 +5,7 @@ import { AddPost } from '../components/AddPost'
 import { PostCard } from '../components/PostCard'
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { Col, Row, Spinner, Table } from 'react-bootstrap'
+import Header from '../components/Header'
 
 
 
@@ -43,13 +44,6 @@ const getPinnedPosts = async ()=>{
 
 
 
-useEffect(() => {
-  getPosts(page)  
-  getPinnedPosts()
-  
-}, []);
-
-
      
 
     const getPosts = async ()=>{
@@ -72,9 +66,21 @@ useEffect(() => {
       }
   }
 
-     
+ 
+useEffect(() => {
+  getPosts(page)  
+  if(loggedIn){
+    getPinnedPosts()
+  }
+  
+}, []);
+
+    
 
   return (
+    <>
+        <Header />
+
   <div style={{marginTop:"80px"}}>
   {loggedIn && <AddPost />}
 <Row >
@@ -106,6 +112,7 @@ useEffect(() => {
       _id={ele._id} 
       likes={ele.noOfLikes}
        createdAt={ele.createdAt} 
+       createdBy= {ele.created_by}
        loggedIn={loggedIn? true:false}
       didUserLiked={didUserLiked} 
       isAdmin={userInfo? userInfo.isAdmin:false}
@@ -117,68 +124,69 @@ useEffect(() => {
 </div>
   </Col>
 
-  <Col>
+  {loggedIn? <Col>
 
-  <div 
+<div 
+  style={{
+    top:"0",
+    padding:"15px",
+    marginLeft:"15px",
+    marginTop:"90px",
+    marginBottom:"0px",
+    position:"fixed",
+    overflow:"scroll",
+    borderRadius:"15px",
+
+      }}>
+    <div 
     style={{
-      top:"0",
-      padding:"15px",
-      marginLeft:"15px",
-      marginTop:"90px",
-      marginBottom:"0px",
-      position:"fixed",
-      maxHeight:"100%",
-      overflow:"scroll",
-        }}>
-      <div 
-      style={{
-        backgroundColor:"#FFF6EA",
-        borderRadius:"15px",
-        paddingBottom:"60px",
-      }}
-      >
-       
-    <Table striped hover style={{borderRadius:"15px", color:"black"}} bordered={false}>
-  
- 
-  <tbody>
-    <tr onClick={()=>{
-    let ele = document.getElementsByClassName("627fbbd4eb04bdd22a2136c0")[0]
-    if(ele){
-      let rect = ele.getBoundingClientRect();
-    window.scrollTo(rect.x , rect.y+ 50)
+
+      backgroundColor:"#7F8487",
+      borderRadius:"15px",
+      padding:"10px",
+    }}
+    >
+     
+  <Table striped hover style={{borderRadius:"15px", color:"black"}} bordered={false}>
+
+<thead  style={{textAlign:"center"}}>
+ PinnedPosts
+</thead>
+<tbody>
+
+  {pinned.map((ele)=>{
+  return <tr key={`pinned${ele._id}`} onClick={()=>{
+    let element =  document.getElementsByClassName(ele._id)[0]
+    console.log(element);
+    if(element){
+      let rect = element.getBoundingClientRect();
+      console.log(rect.x);
+      if(rect.x>0){
+      window.scrollTo(0 , rect.y)
+
+      }else if(rect.x<0){
+        window.scrollTo(0 , rect.y)
+
+        }
+      else {
+        window.scrollTo(0, 50000);
+      }
     }
     }}>
-      
-      <td>Mark      kmfdomld    gkml</td>
+      <td>{ele.desc}</td>
     </tr>
+})}
 
-    {pinned.map((ele)=>{
-    return <tr key={`pinned${ele._id}`} onClick={()=>{
-      let element = document.getElementsByClassName(ele._id)[0]
-      if(element){
-        let rect = element.getBoundingClientRect();
-      window.scrollTo(rect.x , rect.y-20)
-      }else{
-        window.scrollTo(0 , document.body.scrollHeight)
-      }
-      }}>
-        <td>{ele.desc}</td>
-      </tr>
-  })}
-    <tr>
-      <td>Jacob</td>
-    </tr>
-
-  </tbody>
+</tbody>
 </Table>
-      </div>
-      </div>
+    </div>
+    </div>
 
-  </Col>
+</Col>:<Col></Col>
+  }
 </Row>
 
  
-    </div>
+    </div></>
   )
 }

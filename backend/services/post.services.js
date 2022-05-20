@@ -1,8 +1,7 @@
 const Post = require('../models/post.model')
 const User = require('../models/user.models')
-const Like = require('../models/reach.model')
+const Reach = require('../models/reach.model')
 
-// 1- add post
 
 const addPost = async(req, res) => {
     const { title, created_by, desc } = req.body
@@ -18,9 +17,8 @@ const addPost = async(req, res) => {
     }
 }
 
-// 2- update post
 const updatePost = async(req, res) => {
-    const userId = req.headers.userid
+    const userId = req.body.userInfo._id
     const { id, title, desc } = req.body
     const post = await Post.findOne({ _id: id })
     if (post.created_by.toString() == userId) {
@@ -38,7 +36,6 @@ const updatePost = async(req, res) => {
     }
 }
 
-// 3- delete post
 const deletePost = async(req, res) => {
     const { id } = req.body
     const post = await Post.findById(id)
@@ -60,7 +57,6 @@ const deletePost = async(req, res) => {
 
 }
 
-// 4- get all posts 
 const getAllPosts = async(req, res) => {
     const count = await Post.find().count()
     const limit = 5
@@ -88,35 +84,24 @@ const getAllPosts = async(req, res) => {
 }
 
 const getPinnedPosts = async(req, res) => {
-        const find = await Post.find({ isPinned: true })
-        console.log(find);
-        if (find) {
+    const find = await Post.find({ isPinned: true })
+    if (find) {
 
-            res.status(201).json({ posts: find })
-        } else {
-            res.status(404).json({ message: "Sorry But There Is No Posts Right now" })
-
-        }
-
+        res.status(201).json({ posts: find })
+    } else {
+        res.status(404).json({ message: "Sorry But There Is No Posts Right now" })
 
     }
-    // 5- get post by id (with the information of the creator)
+
+
+}
 const getPostById = async(req, res) => {
     const id = req.params.id
-    const { userid } = req.headers
-    const post = await Post.findOne({ _id: id }).populate('created_by', ' -password ')
+    const post = await Post.findOne({ _id: id }).populate('created_by', ' -password ').populate("comments.created_by", { image: 1, first_name: 1 })
     try {
 
         if (post) {
-            if (post.created_by['_id'].toString() == userid) {
-                res.status(200).json({ post })
-
-            } else {
-                res.status(401).json({ message: "You Can Get Your Posts Only" })
-
-            }
-
-
+            res.status(200).json({ post })
         } else {
             res.status(404).json({ message: "Sorry But There Is No Posts With These Information" })
 
@@ -132,61 +117,25 @@ const getPostById = async(req, res) => {
 
 }
 
-// 6- get all posts of yesterday
-const getYesterdayPosts = async(req, res) => {
-    const todayDate = new Date()
-    const beforeYestedayDate = new Date();
-    beforeYestedayDate.setDate(todayDate.getDate() - 2)
-    const count = await Post.find({ createdAt: { "$lt": todayDate.toISOString(), "$gt": beforeYestedayDate.toISOString() } }).count()
-    const limit = 5
-    let page = req.query.page
-    if (page == undefined || page <= 0 || page > Math.floor(count / limit)) {
-        page = 1
-    }
-    let Skip = (page - 1) * limit;
-    if (count) {
-        posts = await Post.find({ createdAt: { "$lt": todayDate.toISOString(), "$gt": beforeYestedayDate.toISOString() } }).skip(Skip).limit(limit).populate('created_by', ' -password -_id')
-        res.status(201).json(posts)
-    } else {
-        res.status(404).json({ message: "Sorry But There Is No Posts Right now" })
 
-    }
 
-}
-
-// 7- get all posts of today
-const getTodayPosts = async(req, res) => {
-    const todayDate = new Date()
-    const yestedayDate = new Date();
-    yestedayDate.setDate(todayDate.getDate() - 1)
-    const count = await Post.find({ createdAt: { "$gt": yestedayDate.toISOString() } }).count()
-    const limit = 5
-    let page = req.query.page
-    if (page == undefined || page <= 0 || page > Math.floor(count / limit)) {
-        page = 1
-    }
-    let Skip = (page - 1) * limit;
-    if (count) {
-        posts = await Post.find({ createdAt: { "$gt": yestedayDate.toISOString() } }).skip(Skip).limit(limit).populate('created_by', ' -password -_id')
-        res.status(201).json(posts)
-    } else {
-        res.status(404).json({ message: "Sorry But There Is No Posts Right now" })
-
-    }
-
-}
 
 const likeApost = async(req, res) => {
     const { post, user } = req.body
-    Post.findById(post).then(async(post) => {
-
-        let likedBefore = await Post.findOne({ _id: post, likes: { $in: [user] } })
-        if (!likedBefore) {
-            like = await Post.updateOne({ _id: post }, { $addToSet: { "likes": user }, $inc: { "noOfLikes": 1 } })
-            res.status(201).json({ message: "like was Aded Succefully" })
+    Post.findById(post).then(async(find) => {
+        if (find) {
+            let likedBefore = await Post.findOne({ _id: post, likes: { $in: [user] } })
+            if (!likedBefore) {
+                like = await Post.updateOne({ _id: post }, { $addToSet: { "likes": user }, $inc: { "noOfLikes": 1 } })
+                res.status(201).json({ message: "like was Aded Succefully" })
+            } else {
+                res.status(201).json({ message: "you've liked this before" })
+            }
         } else {
-            res.status(201).json({ message: "you've liked this before" })
+            res.status(404).json({ message: "there is no post with this id" })
         }
+
+
 
     }).catch((err) => {
         res.status(500).json({ message: "can't preform the operation" })
@@ -197,12 +146,37 @@ const likeApost = async(req, res) => {
 
 const deleteLike = async(req, res) => {
     const { postId, user } = req.body
+    Post.findById(postId).then(async(find) => {
+        if (find) {
+
+            let deleteALike = await Post.updateOne({ _id: postId }, { $inc: { 'noOfLikes': -1 }, $pull: { likes: user.toString() } })
+            res.status(200).json({ message: "like was Deleted Succefully" })
+        } else {
+            res.status(404).json({ message: "there is no post with this id" })
+
+        }
+
+
+
+
+    }).catch((err) => {
+        res.status(500).json({ message: "can't preform the operation", err })
+
+    })
+
+}
+
+const AddComment = async(req, res) => {
+    const { comment, postId } = req.body
+    const user = req.body.user._id
     Post.findById(postId).then(async(post) => {
 
-
-        let deleteALike = await Post.updateOne({ _id: postId }, { $inc: { 'noOfLikes': -1 }, $pull: { likes: user.toString() } })
-        res.status(201).json({ message: "like was Deleted Succefully" })
-
+        if (post) {
+            Addingcomment = await Post.updateOne({ _id: postId }, { $addToSet: { "comments": { comment, created_by: user } } })
+            res.status(201).json({ message: "like was Aded Succefully" })
+        } else {
+            res.status(404).json({ message: "there is no posts with this id" })
+        }
 
     }).catch((err) => {
         res.status(500).json({ message: "can't preform the operation", err })
@@ -213,7 +187,6 @@ const deleteLike = async(req, res) => {
 
 const PinPost = async(req, res) => {
     const { id } = req.body // post ID
-    console.log(id);
     const post = await Post.findOne({ _id: id })
     if (post) {
         Post.updateOne({ _id: id }, { isPinned: true }).then(r => {
@@ -225,14 +198,13 @@ const PinPost = async(req, res) => {
         })
 
     } else {
-        res.status(401).json({ message: "Sorry But You Can't Pin Posts" })
+        res.status(404).json({ message: "Sorry But You Can't Pin Posts" })
 
     }
 }
 
 const unPinPost = async(req, res) => {
     const { id } = req.body // post ID
-    console.log(id);
     const post = await Post.findOne({ _id: id })
     if (post) {
         Post.updateOne({ _id: id }, { isPinned: false }).then(r => {
@@ -244,19 +216,35 @@ const unPinPost = async(req, res) => {
         })
 
     } else {
-        res.status(401).json({ message: "Sorry But There is no posts with these information" })
+        res.status(404).json({ message: "Sorry But There is no posts with these information" })
 
     }
 }
 const statics = async(req, res) => {
-    // number of users signed up
+    const todayDate = new Date()
+    const yestedayDate = new Date();
+    const beforeYestedayDate = new Date();
+    beforeYestedayDate.setDate(todayDate.getDate() - 2)
+    yestedayDate.setDate(todayDate.getDate() - 1)
+        // number of users signed up
     const noOfUsers = await User.find().count()
         // number of posts
     const noOfPosts = await Post.find().count()
         //post with most interaction
     const mostInteraction = await Post.find().sort({ noOfLikes: -1 }).limit(1)
-    console.log(mostInteraction[0]);
-    res.json({ noOfUsers, noOfPosts, mostInteraction: mostInteraction[0] })
+    const noOfAllReachs = await Reach.find().count()
+    const noOfTodayReachs = await Reach.find({ createdAt: { "$gt": yestedayDate.toISOString() } }).count()
+    const noOfTodayPosts = await Post.find({ createdAt: { "$gt": yestedayDate.toISOString() } }).count()
+    const noOfYesterdayPosts = await Post.find({ createdAt: { "$lt": todayDate.toISOString(), "$gt": beforeYestedayDate.toISOString() } }).count()
+    res.status(200).json({
+        noOfUsers,
+        noOfPosts,
+        mostInteraction: mostInteraction[0],
+        noOfAllReachs,
+        noOfTodayReachs,
+        noOfTodayPosts,
+        noOfYesterdayPosts
+    })
 }
 module.exports = {
     addPost,
@@ -264,12 +252,11 @@ module.exports = {
     deletePost,
     getAllPosts,
     getPostById,
-    getYesterdayPosts,
-    getTodayPosts,
     likeApost,
     PinPost,
     deleteLike,
     getPinnedPosts,
     unPinPost,
-    statics
+    statics,
+    AddComment
 }

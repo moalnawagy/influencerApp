@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {Form, Button , Row, Col, Spinner, Alert, Container} from 'react-bootstrap'
 import {Link, useNavigate} from 'react-router-dom'
 import backendAPI from '../api/backendAPI'
+import Header from '../components/Header'
 
 
 
@@ -43,25 +44,34 @@ const navigate = useNavigate()
     }, [Token, localStorage.getItem("token")]);
    
     return (
-        <Container style={{marginTop:"90px"}}>
+        <>
+            <Header />
+
+        <Container style={{marginTop:"90px",maxWidth: "900px",}}>
              <div>
     {error && <Alert variant="danger" onClose={() => seterror(false)} dismissible>
 <Alert.Heading>INVALID EMAIL OR PASSWORD</Alert.Heading>
 
 </Alert>}
 </div>
-<div style={{backgroundColor: "#EBEBEB",
+<div style={{backgroundColor: "#3A3845",
     padding:"20px",
     borderRadius: "25px",
     minWidth:"500px",
-    maxWidth: "90vw",
+    maxWidth: "800px",
     margin:"50px",
 }} >
 
-<Row className="justify-content-center" > <h1 style={{textAlign:"center"}}>Signup</h1></Row>
+<Row className="justify-content-center" > <h1 style={{textAlign:"center"}}>Signin</h1></Row>
   <Row className="justify-content-center">
       
-    <Col></Col>
+    <Col style={{
+    color:"white",
+    fontSize:"60px",
+    fontWeight:"bold",
+    letterSpacing:"3px"
+    }}>
+        join our <div style={{fontSize:"90px",fontWeight:"1500",color:"#EC994B"}}>Family </div> Now</Col>
 
     <Col>
     
@@ -83,7 +93,7 @@ setemail(ele.target.value)}} />
 setpassword(ele.target.value)}
 }/>
 </Form.Group>
-<Button variant="primary" type="submit"> 
+<Button variant="secondary" type="submit"> 
 Submit
 </Button>
 </Form>
@@ -109,7 +119,7 @@ New Customer ? <Link to="/register">Register Here</Link>
  
 </Container>
         
-     
+     </>
     )
   }
 
